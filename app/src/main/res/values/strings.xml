@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Service sample</string>
+
+    <string name="start_service">서비스 시작</string>
+    <string name="stop_service">서비스 종료</string>
+
+    <string name="default_time_value" translatable="false">00:00:00</string>
+
+</resources>
