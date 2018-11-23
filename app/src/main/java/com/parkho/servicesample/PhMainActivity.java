@@ -25,7 +25,7 @@ public class PhMainActivity extends AppCompatActivity
 
     private TextView mTvTime;
 
-    ServiceConnection mServiceConn = new ServiceConnection() {
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName a_name, IBinder a_service) {
             PhBinder binder = (PhBinder) a_service;
             mService = binder.getService();
@@ -34,12 +34,12 @@ public class PhMainActivity extends AppCompatActivity
         }
 
         public void onServiceDisconnected(ComponentName a_name) {
-            mHandler.removeCallbacksAndMessages(null);
+            onStopService();
         }
     };
 
     // 1초에 한 번씩 time 확인
-    Runnable mClockTick = new Runnable() {
+    private Runnable mClockTick = new Runnable() {
         @Override
         public void run() {
             String strTime = convertTimeFormat(mService.getTime());
@@ -59,17 +59,16 @@ public class PhMainActivity extends AppCompatActivity
         // 서비스 시작
         Button btnStart = findViewById(R.id.btn_start);
         btnStart.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), PhService.class);
-                bindService(intent, mServiceConn, Context.BIND_AUTO_CREATE);
+            public void onClick(View a_view) {
+                onStartService();
             }
         });
 
         // 서비스 종료
         Button btnStop = findViewById(R.id.btn_stop);
         btnStop.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                unbindService(mServiceConn);
+            public void onClick(View a_view) {
+                onStopService();
             }
         });
 
@@ -77,9 +76,29 @@ public class PhMainActivity extends AppCompatActivity
     }
 
     /**
+     * 서비스 시작
+     */
+    private void onStartService() {
+        Intent intent = new Intent(getApplicationContext(), PhService.class);
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * 서비스 종료
+     */
+    private void onStopService() {
+        if (mService != null) {
+            unbindService(mServiceConnection);
+            mService = null;
+        }
+
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    /**
      * Time format
      */
-    public String convertTimeFormat(final long a_time) {
+    private String convertTimeFormat(final long a_time) {
         final long hr = TimeUnit.MILLISECONDS.toHours(a_time);
         final long min = TimeUnit.MILLISECONDS.toMinutes(a_time - TimeUnit.HOURS.toMillis(hr));
         final long sec = TimeUnit.MILLISECONDS.toSeconds(a_time - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));

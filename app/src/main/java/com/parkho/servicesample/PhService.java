@@ -14,7 +14,6 @@ public class PhService extends Service
     private MediaPlayer mMediaPlayer;
 
     private long mStartTime;
-    private long mVisibleTime;
 
     class PhBinder extends Binder {
         PhService getService() {
@@ -37,18 +36,18 @@ public class PhService extends Service
         super.onDestroy();
 
         mMediaPlayer.stop();
+        mStartTime = 0;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        mStartTime = (mStartTime == 0) ? SystemClock.elapsedRealtime() : SystemClock.elapsedRealtime() - mVisibleTime;
+        mStartTime = SystemClock.elapsedRealtime();
         mMediaPlayer.start();
 
         return mBinder;
     }
 
     public long getTime() {
-        mVisibleTime = SystemClock.elapsedRealtime() - mStartTime;
-        return mVisibleTime;
+        return SystemClock.elapsedRealtime() - mStartTime;
     }
 }
